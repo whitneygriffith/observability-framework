@@ -33,6 +33,8 @@ Log records abides by [OpenTelemetry log data model](https://github.com/open-tel
     * messages are machine parseable 
 * Application native logging libraries/OpenTelemetry SDKs will be modified/adopted to emit logs according to [OpenTelemetry log data model](https://github.com/open-telemetry/opentelemetry-specification/blob/master/specification/logs/data-model.md)
 
+Code is written with the following: 
+* All response from requests are captured with the proper status code.
 ## Framework 
 
 Centrally collect Traces, Metrics, and Logs (Exceptions, Error,  Warning, Info) by auto and manual instrumentation of solution that generates: 

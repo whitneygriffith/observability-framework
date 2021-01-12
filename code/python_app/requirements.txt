@@ -1,4 +1,17 @@
-opentelemetry-api
+# OTel Interfaces 
 opentelemetry-sdk
+
+# OTel Manual Instrumentation Packages for flask and python
+opentelemetry-instrumentation
+
+
+# OTel Auto Instrumentation Packages for flask and python
+opentelemetry-instrumentation-flask 
+opentelemetry-instrumentation-requests
+
+# Python App 
 flask 
 requests
+
+# Productionization
+gunicorn
