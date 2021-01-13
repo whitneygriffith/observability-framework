@@ -1,4 +1,5 @@
 import requests 
+import logging 
 
 from flask import Flask, request
 
@@ -24,11 +25,16 @@ app = Flask(__name__)
 def jokes():
     url = "https://official-joke-api.appspot.com/random_joke"
     try: 
+        logging.info(f"Server Request started for jokes")
         response = requests.get(url).json()
+        logging.info(f"Server Request ended successfully for jokes")
         return response
     except Exception as e: 
-         # TODO: Log exception
         return app.response_class(response=str(e), status=response.status_code, mimetype="application/text")
+
+@app.route("/hello")
+def hello():
+   return "hello world\n"
 
 
 if __name__ == "__main__":

@@ -38,10 +38,12 @@ To verify instrumentation:
 
 ## Environment Variables
 
+Traces
 ```
 export OTEL_EXPORTER=otlp_span
-export OTEL_EXPORTER_OTLP_ENDPOINT="TODO: ENDPOINT_ADDRESS"
-export OTEL_EXPORTER_OTLP_INSECURE="True"
+export OTEL_EXPORTER_OTLP_SPAN_ENDPOINT="TODO: ENDPOINT_ADDRESS"
+export OTEL_EXPORTER_OTLP_SPAN_PROTOCOL="TODO: grpc"
+export OTEL_EXPORTER_OTLP_SPAN_INSECURE="True"
 export OTEL_SERVICE_NAME="jokes_generator"
 ```
 ## Locally 

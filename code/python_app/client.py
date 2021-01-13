@@ -1,5 +1,6 @@
 # Creates Calls to Flask API 
-import requests 
+import requests
+import logging  
 from os import environ 
 
 from opentelemetry import trace
@@ -15,13 +16,14 @@ trace.get_tracer_provider().add_span_processor(
     SimpleExportSpanProcessor(ConsoleSpanExporter())
 )
 
-url = environ.get("api_url", "http://127.0.0.1:8000/jokes")
-num_requests = 10
+url = environ.get("api_url", "http://127.0.0.1:800")
 
-for request in range(num_requests): 
+for request in range(10): 
     try: 
-        jokes = requests.get(url).json()
-        # TODO: Log response 
+        logging.info(f"Client Request {request} started for jokes")
+        jokes = requests.get(url + '/jokes')
+        logging.info(f"Client Request {request} started for hello")
+        hello = requests.get(url + '/hello')
+        logging.info(f"Client Request {request} ended successfully for hello and jokes")
     except Exception as e:
-        # TODO: Log exception
-        print(e)
+        logging.exception(f"Client Execption Occurred {e}")
