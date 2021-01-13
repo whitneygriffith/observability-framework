@@ -25,10 +25,11 @@ def jokes():
     url = "https://official-joke-api.appspot.com/random_joke"
     try: 
         response = requests.get(url).json()
-        return app.response_class(response=response, status=200, mimetype="application/text")
-    except: 
-        return app.response_class(response="Internal Server Error", status=response.status_code, mimetype="application/text")
+        return response
+    except Exception as e: 
+         # TODO: Log exception
+        return app.response_class(response=str(e), status=response.status_code, mimetype="application/text")
 
 
 if __name__ == "__main__":
-  app.run(port=8082)
+  app.run(port=8000)

@@ -1,8 +1,8 @@
-# OTel Interfaces 
+# OTel Mandatory Packages 
 opentelemetry-sdk
+opentelemetry-instrumentation
 
 # OTel Instrumentation Packages for flask and python
-opentelemetry-instrumentation
 opentelemetry-instrumentation-flask 
 opentelemetry-instrumentation-requests
 

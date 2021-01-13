@@ -1,6 +1,6 @@
 # Introduction 
 
-[app.py](./app.py)
+[api.py](./api.py)
 
 # Getting Started
 
@@ -12,37 +12,41 @@ Install packages `pip install -r requirements.txt`
 
 ## Instrumentation 
 
-configuration of Tracing Provider
+Configuration of Tracing Provider is done through [Environment Variables](#environment-variables)
+
+TODO: 
 * Data source specific configuration
 * Exporter configuration
+    * span processor 
+    * tracer provider 
+    * logger 
 * Propagator configuration
 * Resource configuraton
-exporter 
-* setting credentials securely 
-span processor 
-tracer provider 
-logger 
+
 
 ### Autoinstrumentation
 
-[app.py](./app.py) is automatically instrumented for tracing by installing the relevant instrumentation libraries for the python site-packages used in the app which can be found [here](https://opentelemetry-python.readthedocs.io/en/stable/index.html#instrumentations) or can be recommended by running `opentelemetry-bootstrap --action=requirements`
+[api.py](./api.py) is automatically instrumented for tracing by installing the relevant instrumentation libraries for the python site-packages used in the app which can be found [here](https://opentelemetry-python.readthedocs.io/en/stable/index.html#instrumentations) or can be recommended by running `opentelemetry-bootstrap --action=requirements`
+
 
 
 To verify instrumentation: 
 
-[Results when run with flask](#flask-sample)
-
-[Results when run with console utils](#console-sample)
+[Results for Flask Sample](#flask-sample)
 
 # Build and Run App 
 
 ## Environment Variables
 
-OTEL_PYTHON_DJANGO_INSTRUMENT
+```
+export OTEL_EXPORTER=otlp_span
+export OTEL_EXPORTER_OTLP_ENDPOINT="TODO: ENDPOINT_ADDRESS"
+export OTEL_EXPORTER_OTLP_INSECURE="True"
+export OTEL_SERVICE_NAME="jokes_generator"
+```
 ## Locally 
 
-`export FLASK_APP=app.py`
-`opentelemetry-instrument --exporter none --service-name jokes-generator --ids-generator random flask run`
+`opentelemetry-instrument --exporter none --service-name jokes-generator --ids-generator random gunicorn api:app`
 
 
 ## Docker 
@@ -56,7 +60,9 @@ OTEL_PYTHON_DJANGO_INSTRUMENT
 
 ### Flask Sample 
 
-`opentelemetry-instrument --exporter none --service-name jokes-generator --ids-generator random flask run`
+#### API 
+
+`opentelemetry-instrument --exporter none --service-name jokes-generator --ids-generator random gunicorn api:app`
 
 ```
 {
@@ -171,59 +177,39 @@ OTEL_PYTHON_DJANGO_INSTRUMENT
 ```
 
 
-### Console Sample 
+#### Client 
 
-`python app.py` 
-
-`python console_utils/client.py`
-
-Expected sample output from [console_utils/client.py](./console_utils/client.py): 
+`opentelemetry-instrument --exporter none --service-name jokes-client --ids-generator random python3 client.py`
 
 ```
 {
-    "name": "client-server",
+    "name": "HTTP GET",
     "context": {
-        "trace_id": "0x79801874915d919d157568cd9c65b8c7",
-        "span_id": "0x327d460f23849113",
+        "trace_id": "0x285d0d322bd17fa5e337c1f7dd5306c2",
+        "span_id": "0x77e875e675aa1869",
         "trace_state": "{}"
     },
-    "kind": "SpanKind.INTERNAL",
-    "parent_id": "0x0601002a6ff832ef",
-    "start_time": "2021-01-12T21:26:32.049287Z",
-    "end_time": "2021-01-12T21:26:32.191381Z",
-    "status": {
-        "status_code": "UNSET"
-    },
-    "attributes": {},
-    "events": [],
-    "links": [],
-    "resource": {
-        "telemetry.sdk.language": "python",
-        "telemetry.sdk.name": "opentelemetry",
-        "telemetry.sdk.version": "0.16b1"
-    }
-}
-{
-    "name": "client",
-    "context": {
-        "trace_id": "0x79801874915d919d157568cd9c65b8c7",
-        "span_id": "0x0601002a6ff832ef",
-        "trace_state": "{}"
-    },
-    "kind": "SpanKind.INTERNAL",
+    "kind": "SpanKind.CLIENT",
     "parent_id": null,
-    "start_time": "2021-01-12T21:26:32.049205Z",
-    "end_time": "2021-01-12T21:26:32.192394Z",
+    "start_time": "2021-01-13T19:24:59.060472Z",
+    "end_time": "2021-01-13T19:24:59.191997Z",
     "status": {
         "status_code": "UNSET"
     },
-    "attributes": {},
+    "attributes": {
+        "component": "http",
+        "http.method": "GET",
+        "http.url": "http://127.0.0.1:8000/jokes",
+        "http.status_code": 200,
+        "http.status_text": "OK"
+    },
     "events": [],
     "links": [],
     "resource": {
         "telemetry.sdk.language": "python",
         "telemetry.sdk.name": "opentelemetry",
-        "telemetry.sdk.version": "0.16b1"
+        "telemetry.sdk.version": "0.16b1",
+        "service.name": "jokes-client"
     }
 }
 ```
@@ -238,3 +224,7 @@ Requests:
 # Additional Resources 
 
 [Autoinstrumentation in Python](https://opentelemetry-python.readthedocs.io/en/stable/examples/auto-instrumentation/README.html)
+
+[Flask Instrumentation](https://opentelemetry-python.readthedocs.io/en/stable/instrumentation/flask/flask.html)
+
+[Python Requests Library Instrumentation](https://opentelemetry-python.readthedocs.io/en/stable/instrumentation/requests/requests.html)
