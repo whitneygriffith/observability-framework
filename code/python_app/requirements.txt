@@ -1,13 +1,13 @@
 # OTel Interfaces 
 opentelemetry-sdk
 
-# OTel Manual Instrumentation Packages for flask and python
+# OTel Instrumentation Packages for flask and python
 opentelemetry-instrumentation
-
-
-# OTel Auto Instrumentation Packages for flask and python
 opentelemetry-instrumentation-flask 
 opentelemetry-instrumentation-requests
+
+# OTel Exporter Packages 
+opentelemetry-exporter-otlp
 
 # Python App 
 flask 
