@@ -16,7 +16,7 @@ trace.get_tracer_provider().add_span_processor(
     SimpleExportSpanProcessor(ConsoleSpanExporter())
 )
 
-url = environ.get("api_url", "http://127.0.0.1:800")
+url = environ.get("API_URL", "http://127.0.0.1:800")
 
 for request in range(10): 
     try: 

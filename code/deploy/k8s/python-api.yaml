@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: python-api
+  namespace: python-app
+  labels:
+    app: python-app
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: python-app
+  template:
+    metadata:
+      labels:
+        app: python-app
+    spec:
+      containers:
+      - name: python-api
+        image: #TODO
+        command: ["opentelemetry-instrument", "--exporter", "none", "--service-name", "jokes-api", "--ids-generator", "random", "gunicorn", "--bind", "0.0.0.0:8000", "--workers", "4", "--threads", "2", "--worker-tmp-dir", "/dev/shm", "api:app"]
+        ports:
+          - containerPort: 8000
+        livenessProbe:
+          httpGet:
+            path: /hello #TODO
+            port: 8000
+          initialDelaySeconds: 3
+          periodSeconds: 60
+        #TODO: readinessProbe
+        env:
+        # Disable Application Insights collection of Env Vars (this potentially exposes secrets.)
+        # https://docs.microsoft.com/en-us/azure/azure-monitor/insights/container-insights-manage-agent#how-to-disable-environment-variable-collection-on-a-container
+        - name: AZMON_COLLECT_ENV  
+          value: "False"  
+        #TODO: secrets  
