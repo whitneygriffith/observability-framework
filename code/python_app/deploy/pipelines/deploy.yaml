@@ -24,7 +24,7 @@ steps:
       targetType: 'inline'
       script: |
         DOCKER_BUILDKIT=1 docker build -f Client.Dockerfile -t $(acrName).azurecr.io/client:$(version) .
-        DOCKER_BUILDKIT=1 docker build -f Api.Dockerfile -t $(acrName).azurecr.io/api:$(version) .
+        DOCKER_BUILDKIT=1 docker build -f API.Dockerfile -t $(acrName).azurecr.io/api:$(version) .
       workingDirectory: '$(System.DefaultWorkingDirectory)/code/python_app'
 
   - task: Bash@3
