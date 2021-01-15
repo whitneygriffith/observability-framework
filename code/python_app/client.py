@@ -49,7 +49,7 @@ def hello():
 @app.route("/healthcheck", methods=["GET"])
 def healthcheck():
     try:
-        response = requests.get(url)
+        response = requests.get(url + '/hello')
         return app.response_class(response="API is live", status=200, mimetype="application/text")
     except Exception as e:
         return app.response_class(response=str(e), status=500, mimetype="application/text")
