@@ -1,0 +1,42 @@
+name: $(BuildDefinitionName).$(DayOfYear)$(Rev:.r)
+ 
+pr: none
+trigger: none
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+- group: secrets
+- name: version
+  value: 'v1.$(Build.BuildId)'
+
+steps:      
+  - task: Bash@3
+    displayName: Docker Login
+    inputs:
+      targetType: 'inline'
+      script: 'docker login -u $(dockerId) -p $(dockerPassword) $(acrName).azurecr.io'
+            
+  - task: Bash@3
+    displayName: Docker Build
+    inputs:
+      targetType: 'inline'
+      script: |
+        DOCKER_BUILDKIT=1 docker build -f Client.Dockerfile -t $(acrName).azurecr.io/client:$(version) .
+        DOCKER_BUILDKIT=1 docker build -f Api.Dockerfile -t $(acrName).azurecr.io/api:$(version) .
+      workingDirectory: '$(System.DefaultWorkingDirectory)/code/python_app'
+
+  - task: Bash@3
+    displayName: Docker Push  
+    inputs:
+      targetType: 'inline'
+      script: |
+        docker push  $(acrName).azurecr.io/client:$(version)
+        docker push  $(acrName).azurecr.io/api:$(version)
+
+  - task: Bash@3
+    displayName: Docker logout
+    inputs:
+      targetType: 'inline'
+      script: 'docker logout $(acrName).azurecr.io'
