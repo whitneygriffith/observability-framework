@@ -1,15 +1,7 @@
 # Introduction 
 
 [api.py](./api.py)
-
-# Getting Started
-
-Create virtualenv `python -m venv venv`
-
-Activate virtualenv `source venv/bin/activate`
-
-Install packages `pip install -r requirements.txt`
-
+[client.py](./client.py)
 ## Instrumentation 
 
 Configuration of Tracing Provider is done through [Environment Variables](#environment-variables)
@@ -48,12 +40,35 @@ export OTEL_SERVICE_NAME="jokes_generator"
 ```
 ## Locally 
 
-`opentelemetry-instrument --exporter none --service-name jokes-generator --ids-generator random gunicorn api:app`
+Create virtualenv `python -m venv venv`
 
+Activate virtualenv `source venv/bin/activate`
+
+Install packages `pip install -r requirements.txt`
+
+### API 
+`opentelemetry-instrument --exporter none --service-name jokes-api --ids-generator random gunicorn api:app`
+
+
+### Client
+
+`opentelemetry-instrument --exporter none --service-name jokes-client --ids-generator random gunicorn client:app`
 
 ## Docker 
 
-## Kubernetes 
+TODO: Communicate between API and Client based on network settings
+### API 
+
+`DOCKER_BUILDKIT=1 docker build -t braveheartacr.azurecr.io/api -f API.Dockerfile  .`
+
+`docker run -it  -p 127.0.0.1:8000:8000 braveheartacr.azurecr.io/api`
+
+### Client 
+
+
+`DOCKER_BUILDKIT=1 docker build -t braveheartacr.azurecr.io/client -f Client.Dockerfile  .`
+
+`docker run -it -p 127.0.0.1:5000:5000 braveheartacr.azurecr.io/client`
 
 # Test
 
@@ -64,7 +79,7 @@ export OTEL_SERVICE_NAME="jokes_generator"
 
 #### API 
 
-`opentelemetry-instrument --exporter none --service-name jokes-generator --ids-generator random gunicorn api:app`
+`opentelemetry-instrument --exporter none --service-name jokes-api --ids-generator random gunicorn api:app`
 
 ```
 {
@@ -102,7 +117,7 @@ export OTEL_SERVICE_NAME="jokes_generator"
         "telemetry.sdk.language": "python",
         "telemetry.sdk.name": "opentelemetry",
         "telemetry.sdk.version": "0.16b1",
-        "service.name": "jokes-generator"
+        "service.name": "jokes-api"
     }
 }
 127.0.0.1 - - [13/Jan/2021 07:57:48] "GET / HTTP/1.1" 404 -
@@ -133,7 +148,7 @@ export OTEL_SERVICE_NAME="jokes_generator"
         "telemetry.sdk.language": "python",
         "telemetry.sdk.name": "opentelemetry",
         "telemetry.sdk.version": "0.16b1",
-        "service.name": "jokes-generator"
+        "service.name": "jokes-api"
     }
 }
 {
@@ -172,7 +187,7 @@ export OTEL_SERVICE_NAME="jokes_generator"
         "telemetry.sdk.language": "python",
         "telemetry.sdk.name": "opentelemetry",
         "telemetry.sdk.version": "0.16b1",
-        "service.name": "jokes-generator"
+        "service.name": "jokes-api"
     }
 }
 127.0.0.1 - - [13/Jan/2021 07:57:58] "GET /jokes HTTP/1.1" 200 -
