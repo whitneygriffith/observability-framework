@@ -13,7 +13,10 @@ COPY requirements.txt .
 # install dependencies
 RUN pip install -r requirements.txt
 
+EXPOSE 8000
+
 ENTRYPOINT [ "python", "./api.py" ]
 
 # command to run on container start
-CMD ["opentelemetry-instrument", "--exporter", "none", "--service-name", "jokes-api", "--ids-generator", "random", "gunicorn", "--bind", "0.0.0.0:8000", "--workers", "4", "--threads", "2", "--worker-tmp-dir", "/dev/shm", "api:app"]
+# "gunicorn", "--bind", "0.0.0.0:8000", "--workers", "4", "--threads", "2", "--worker-tmp-dir", "/dev/shm", "api:app"
+CMD ["opentelemetry-instrument", "--exporter", "none", "--service-name", "jokes-api", "--ids-generator", "random", "python", "api.py"]
