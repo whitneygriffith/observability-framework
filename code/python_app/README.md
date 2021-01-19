@@ -16,15 +16,34 @@ TODO:
 * Resource configuraton
 
 
-### Autoinstrumentation
+### Traces Autoinstrumentation
 
 [api.py](./api.py) is automatically instrumented for tracing by installing the relevant instrumentation libraries for the python site-packages used in the app which can be found [here](https://opentelemetry-python.readthedocs.io/en/stable/index.html#instrumentations) or can be recommended by running `opentelemetry-bootstrap --action=requirements`
 
-
-
 To verify instrumentation: 
 
-[Results for Flask Sample](#flask-sample)
+[Results for Traces](#traces-autoinstrumentation-results)
+
+
+
+### Metrics Instrumentation
+
+TODO: Bug when running gunicorn
+
+```
+Exception in thread Thread-1:
+Traceback (most recent call last):
+  File "/usr/local/Cellar/python@3.8/3.8.6_2/Frameworks/Python.framework/Versions/3.8/lib/python3.8/threading.py", line 932, in _bootstrap_inner
+    self.run()
+  File "/Users/whitneygriffith/Desktop/MicrosoftProjects/pwc-osic/observability-framework/code/python_app/venv/lib/python3.8/site-packages/opentelemetry/sdk/metrics/export/controller.py", line 48, in run
+    self.tick()
+  File "/Users/whitneygriffith/Desktop/MicrosoftProjects/pwc-osic/observability-framework/code/python_app/venv/lib/python3.8/site-packages/opentelemetry/sdk/metrics/export/controller.py", line 57, in tick
+    self.accumulator.collect()
+AttributeError: 'DefaultMeter' object has no attribute 'collect'
+```
+
+
+[Results for Metrics](#metrics-instrumentation-results)
 
 # Build and Run App 
 
@@ -73,11 +92,9 @@ TODO: Communicate between API and Client based on network settings
 # Test
 
 
-## Autoinstrumentation 
+## Traces Autoinstrumentation Results
 
-### Flask Sample 
-
-#### API 
+### API Traces Sample
 
 `opentelemetry-instrument --exporter none --service-name jokes-api --ids-generator random gunicorn api:app`
 
@@ -194,7 +211,7 @@ TODO: Communicate between API and Client based on network settings
 ```
 
 
-#### Client 
+### Client Traces Sample
 
 `opentelemetry-instrument --exporter none --service-name jokes-client --ids-generator random python3 client.py`
 
@@ -231,6 +248,22 @@ TODO: Communicate between API and Client based on network settings
 }
 ```
 
+
+## Metrics Instrumentation Results
+
+### API Metrics Sample 
+
+`python api.py`
+
+`ConsoleMetricsExporter(data="Counter(name="requests", description="number of incoming requests")", labels="(('endpoint', 'hello api'), ('environment', 'dev'))", value=1, resource={'telemetry.sdk.language': 'python', 'telemetry.sdk.name': 'opentelemetry', 'telemetry.sdk.version': '0.16b1'})`
+
+
+### Client Metrics Sample 
+
+`python client.py`
+
+`ConsoleMetricsExporter(data="Counter(name="requests", description="number of incoming requests")", labels="(('endpoint', 'hello client'), ('environment', 'dev'))", value=1, resource={'telemetry.sdk.language': 'python', 'telemetry.sdk.name': 'opentelemetry', 'telemetry.sdk.version': '0.16b1'})`
+
 ## Requests Lifespan 
 
 Requests: 
@@ -240,7 +273,9 @@ Requests:
 
 # Additional Resources 
 
-[Autoinstrumentation in Python](https://opentelemetry-python.readthedocs.io/en/stable/examples/auto-instrumentation/README.html)
+[OpenTelemetry Specifications](https://github.com/open-telemetry/opentelemetry-specification)
+
+[Autoinstrumentation of Traces in Python](https://opentelemetry-python.readthedocs.io/en/stable/examples/auto-instrumentation/README.html)
 
 [Flask Instrumentation](https://opentelemetry-python.readthedocs.io/en/stable/instrumentation/flask/flask.html)
 

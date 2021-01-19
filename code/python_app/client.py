@@ -4,6 +4,7 @@ import logging
 from os import environ 
 from flask import Flask, render_template     
 
+# traces 
 from opentelemetry import trace
 from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import (
@@ -17,6 +18,29 @@ trace.get_tracer_provider().add_span_processor(
     SimpleExportSpanProcessor(ConsoleSpanExporter())
 )
 
+# metrics
+from opentelemetry import metrics
+from opentelemetry.sdk.metrics import Counter, MeterProvider
+from opentelemetry.sdk.metrics.export import ConsoleMetricsExporter
+from opentelemetry.sdk.metrics.export.controller import PushController
+
+
+
+# metrics configuration
+metrics.set_meter_provider(MeterProvider())
+# TODO: get the global meter
+meter = metrics.get_meter(__name__, True)
+exporter = ConsoleMetricsExporter()
+controller = PushController(meter, exporter, 5)
+labels = {"environment": "dev", "endpoint" : ""}
+
+incoming_requests_counter = meter.create_counter(
+    name="requests",
+    description="number of incoming requests",
+    unit="1",
+    value_type=int,
+)
+
 app = Flask(__name__)
 
 url = environ.get("API_URL", "http://0.0.0.0:8000")
@@ -28,6 +52,8 @@ def home():
 @app.route("/jokes")
 def jokes(): 
     try: 
+        labels["endpoint"] = "jokes client"
+        incoming_requests_counter.add(1, labels)
         logging.info(f"Client Request started for jokes")
         jokes = requests.get(url + '/jokes')
         logging.info(f"Client Request ended successfully for jokes")
@@ -38,6 +64,8 @@ def jokes():
 @app.route("/hello")
 def hello():
     try: 
+        labels["endpoint"] = "hello client"
+        incoming_requests_counter.add(1, labels)
         logging.info(f"Client Request started for hello")
         hello = requests.get(url + '/hello')
         logging.info(f"Client Request ended successfully for hello")
