@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api
+  namespace: python-app
+  labels:
+    app: api
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: api
+  template:
+    metadata:
+      labels:
+        app: api
+    spec:
+      containers:
+      - name: api
+        image: braveheartacr.azurecr.io/api:v1.763
+        command: ["opentelemetry-instrument", "--exporter", "none", "--service-name", "jokes-api", "--ids-generator", "random", "python", "api.py"]
+        ports:
+          - containerPort: 8000
+        livenessProbe:
+          httpGet:
+            path: /hello #TODO
+            port: 8000
+          initialDelaySeconds: 3
+          periodSeconds: 60
+        readinessProbe:
+          httpGet:
+            path: /hello #TODO
+            port: 8000
+          initialDelaySeconds: 3
+          periodSeconds: 60
+        env:
+        # Disable Application Insights collection of Env Vars (this potentially exposes secrets.)
+        # https://docs.microsoft.com/en-us/azure/azure-monitor/insights/container-insights-manage-agent#how-to-disable-environment-variable-collection-on-a-container
+        - name: AZMON_COLLECT_ENV  
+          value: "False"  
+        #TODO: secrets  
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: api
+  namespace: python-app
+spec:
+  selector:
+    app: api
+  type: LoadBalancer
+  ports:
+  - protocol: TCP
+    port: 8000

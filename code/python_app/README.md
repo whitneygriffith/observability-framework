@@ -66,12 +66,12 @@ Activate virtualenv `source venv/bin/activate`
 Install packages `pip install -r requirements.txt`
 
 ### API 
-`opentelemetry-instrument --exporter none --service-name jokes-api --ids-generator random gunicorn api:app`
+`opentelemetry-instrument --exporter none --service-name jokes-api --ids-generator random python api.py`
 
 
 ### Client
 
-`opentelemetry-instrument --exporter none --service-name jokes-client --ids-generator random gunicorn client:app`
+`opentelemetry-instrument --exporter none --service-name jokes-client --ids-generator random python client.py`
 
 ## Docker 
 
@@ -96,7 +96,7 @@ TODO: Communicate between API and Client based on network settings
 
 ### API Traces Sample
 
-`opentelemetry-instrument --exporter none --service-name jokes-api --ids-generator random gunicorn api:app`
+`opentelemetry-instrument --exporter none --service-name jokes-api --ids-generator random python3 api.py`
 
 ```
 {

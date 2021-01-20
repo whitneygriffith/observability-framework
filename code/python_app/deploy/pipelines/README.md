@@ -2,7 +2,7 @@
 
 Azure DevOps Organization
 
-Container Registry with a Service Principal assigned
+Container Registry with a Service Principal with ACRPush role assigned
 
 ## Configuration
 
