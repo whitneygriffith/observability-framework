@@ -35,11 +35,16 @@ data:
           memory: 
           processes: 
           process:  
+    extensions:
+      health_check:
+      zpages:
+      pprof:
     exporters: 
       otlp: 
         insecure: true
         endpoint: otel-collector.otel-collector:4317 
     service:
+      extensions: [health_check, zpages, pprof]
       pipelines:
         traces:
           receivers: [otlp]
@@ -90,6 +95,7 @@ spec:
         - containerPort: 4317 # grpc endpoint for OpenTelemetry receiver.
         - containerPort: 55681 # HTTP Endpoint for OpenTelemetry receiver.
         - containerPort: 8888  # Metrics.
+        - containerPort: 13133 # Health check
         volumeMounts:
         - name: otel-agent-config-vol
           mountPath: /conf
