@@ -1,0 +1,7 @@
+apiVersion: v1 
+kind: Namespace
+metadata: 
+  name: otel-exporters
+  annotations:
+    linkerd.io/inject: enabled
+    config.linkerd.io/trace-collector: otel-collector.otel-collector:4317  #INFO: set to otel-collector otlp grpc endpoint
