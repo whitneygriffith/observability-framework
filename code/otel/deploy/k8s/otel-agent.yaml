@@ -5,7 +5,7 @@ metadata:
   namespace: otel-collector
   labels: 
     app: otel 
-    component: otel-agent
+    component: otel-agent-conf
 data: 
   otel-agent-config: |
     receivers: 

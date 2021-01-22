@@ -5,7 +5,7 @@ metadata:
   namespace: otel-collector
   labels: 
     app: otel 
-    component: otel-collector
+    component: otel-collector-conf
 data: 
   otel-collector-config: |
     receivers: 
@@ -34,41 +34,54 @@ data:
               static_configs:
                 - targets: ['otel-collector.otel-collector:8888']
             - job_name: 'linkerd'
+              kubernetes_sd_configs:
+              - role: pod
+                namespaces:
+                  names: ['python-app', 'otel-collector', 'otel-exporters']
               scrape_interval: 5s
               static_configs:
                 - targets: ['linkerd-prometheus.linkerd:9090'] #INFO: Pulls data from linkerD prometheus 
               relabel_configs:
-                - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+                - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape, __meta_kubernetes_pod_container_name]
                   regex: "true"
                   action: keep
               metric_relabel_configs:
                 - source_labels: [__name__]
                   regex: "(request_duration_seconds.*|response_duration_seconds.*)"
                   action: keep
+              honor_labels: true
+              metrics_path: '/federate'
+              params:
+                'match[]':
+                  - '{job="linkerd-proxy"}'
+                  - '{job="linkerd-controller"}'
     exporters: 
       file: 
         path: ./exported.json
-      prometheus:
-        endpoint: prometheus.otel-exporters:9090
-        const_labels:
-          app: python_app
-        send_timestamps: true
+      logging:
+        loglevel: debug
+      # prometheus:
+      #   endpoint: prometheus.otel-exporters:9090
+      #   const_labels:
+      #     app: python_app
+      #   send_timestamps: true
       jaeger:
         endpoint:  jaeger.otel-exporters:14250
         insecure: true
     extensions:
       health_check:
       zpages:
+        endpoint: 0.0.0.0:55679
       pprof:
     service:
       extensions: [health_check, zpages, pprof]
       pipelines:
         traces:
           receivers: [otlp]
-          exporters: [file, jaeger]
+          exporters: [file, jaeger, logging]
         metrics:
           receivers: [otlp]
-          exporters: [file]
+          exporters: [file, logging]
       
 ---
 apiVersion: v1

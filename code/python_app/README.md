@@ -4,7 +4,7 @@
 [client.py](./client.py)
 ## Instrumentation 
 
-Configuration of Tracing Provider is done through [Environment Variables](#environment-variables)
+Configuration of Tracing Provider for OpenTelemetry Collector is done through [Environment Variables](#environment-variables)
 
 TODO: 
 * Data source specific configuration

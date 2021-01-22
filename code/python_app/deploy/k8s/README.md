@@ -8,13 +8,13 @@ Azure Kubernetes Cluster with a Service Principal with ACRPull role assigned and
 
 ## Configuration 
 
-Create `python-app` namespace: `kubectl create namespace python-app`
-
 [Enable LinkerD in Kubernetes cluster](https://linkerd.io/2/getting-started/#step-2-validate-your-kubernetes-cluster)
 
 [Enable Azure Monitor for Containers](https://docs.microsoft.com/en-us/azure/azure-monitor/insights/container-insights-enable-existing-clusters) 
 
 [Authenticate with Azure Container Registry from Azure Kubernetes Service](https://docs.microsoft.com/en-us/azure/aks/cluster-container-registry-integration#grant-aks-access-to-acr): `az aks update -n braveheart-sharing -g braveheart-sharing-rg --attach-acr braveheartacr`
+
+Create `python-app` namespace: `kubectl apply -f namespace.yaml`
 
 ## Deployments 
 

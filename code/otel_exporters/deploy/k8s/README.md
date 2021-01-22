@@ -92,3 +92,10 @@ View Dashboard: `kubectl port-forward pod/prometheus-76dbb4667b-9bndz 9090:9090 
 
 
 Copy Instrumentation Key
+
+## View Exported Data 
+
+### Jaeger
+
+### Prometheus 
+

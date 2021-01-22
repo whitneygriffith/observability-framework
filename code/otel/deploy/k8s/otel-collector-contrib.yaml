@@ -34,22 +34,32 @@ data:
               static_configs:
                 - targets: ['otel-collector-contrib.otel-collector:8888']
             - job_name: 'linkerd'
+              kubernetes_sd_configs:
+              - role: pod
+                namespaces:
+                  names: ['python-app', 'otel-collector', 'otel-exporters']
               scrape_interval: 5s
               static_configs:
                 - targets: ['linkerd-prometheus.linkerd:9090'] #INFO: Pulls data from linkerD prometheus 
               relabel_configs:
-                - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+                - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape, __meta_kubernetes_pod_container_name]
                   regex: "true"
                   action: keep
               metric_relabel_configs:
                 - source_labels: [__name__]
                   regex: "(request_duration_seconds.*|response_duration_seconds.*)"
                   action: keep
+              honor_labels: true
+              metrics_path: '/federate'
+              params:
+                'match[]':
+                  - '{job="linkerd-proxy"}'
+                  - '{job="linkerd-controller"}'
     exporters: 
       file: 
         path: ./exported.json
       azuremonitor:
-        instrumentation_key: # TODO: add instrumentation key 
+        instrumentation_key: db6f2001-90a1-4ec2-8f5e-ce170e70a811 # TODO: add instrumentation key 
     extensions:
       health_check:
       zpages:
