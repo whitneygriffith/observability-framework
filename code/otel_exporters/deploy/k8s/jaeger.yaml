@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: jaeger
+  namespace: otel-exporters
+  labels:
+    app: jaeger
+spec:
+  containers:
+    - name: jaeger
+      image: jaegertracing/all-in-one:latest
+      ports:
+      - containerPort: 5775
+      - containerPort: 6831
+      - containerPort: 6832
+      - containerPort: 5778
+      - containerPort: 16686 # http /api/* & UI https://www.jaegertracing.io/docs/1.21/deployment/#query-service--ui
+      - containerPort: 14268 # http receiver
+      - containerPort: 14269 # health check at / and /metrics
+      - containerPort: 14250 # grpc receiver
+      - containerPort: 9411 # zipkin
