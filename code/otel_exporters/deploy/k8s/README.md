@@ -2,7 +2,7 @@
 
 ## Prerequisites
 
-Create `otel-exporters` namespace: `kubectl create namespace otel-exporters`
+Create `otel-exporters` namespace: `kubectl apply -f namespace.yaml`
 
 ## Deployment
 
@@ -98,4 +98,3 @@ Copy Instrumentation Key
 ### Jaeger
 
 ### Prometheus 
-

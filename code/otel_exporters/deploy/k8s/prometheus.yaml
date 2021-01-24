@@ -4,7 +4,7 @@ metadata:
   name: prometheus-config
   namespace: otel-exporters
 data:
-  prometheus.yml: |
+  prometheus: |
     # my global config
     global:
       scrape_interval:     15s # Set the scrape interval to every 15 seconds. Default is every 1 minute.
@@ -12,16 +12,14 @@ data:
       # scrape_timeout is set to the global default (10s).
 
     # Alertmanager configuration
-    alerting:
-      alertmanagers:
-      - static_configs:
-        - targets:
-          # - alertmanager:9093
+    # alerting:
+    #   alertmanagers:
+    #   - static_configs:
+    #     - targets:
+    #       # - alertmanager:9093
 
     # Load rules once and periodically evaluate them according to the global 'evaluation_interval'.
-    rule_files:
-
-
+    # rule_files:
       # - "first_rules.yml"
       # - "second_rules.yml"
 
@@ -36,7 +34,7 @@ data:
         # scheme defaults to 'http'.
 
         static_configs:
-        - targets: ['localhost:9090']
+        - targets: ['127.0.0.1:9090']
       # TODO: Enable Service Account and Cluster Role permissions to query K8s node and pods https://github.com/shevyf/prom_on_k8s_howto/blob/master/prometheus-roles.yml
       # - job_name: 'kubernetes-nodes'
       #   scheme: https
@@ -81,8 +79,8 @@ data:
       #     target_label: kubernetes_pod_name
 
 ---
-apiVersion: v1
-kind: Pod
+apiVersion: apps/v1
+kind: Deployment
 metadata:
   name: prometheus
   namespace: otel-exporters
@@ -91,30 +89,57 @@ metadata:
   annotations:
     prometheus.io/scrape: "true"
     prometheus.io/port: "9090"
+    linkerd.io/inject: enabled
+    config.linkerd.io/trace-collector: otel-collector.otel-collector:4317  #INFO: set to otel-collector otlp grpc endpoint
 spec:
-  containers:
-  - name: prometheus
-    image: prom/prometheus:latest
-    args:
-      - '--storage.tsdb.retention.time=6h'
-      - '--storage.tsdb.path=/prometheus'
-      - '--config.file=/etc/prometheus/prometheus.yml'
-    command:
-    - /bin/prometheus
-    ports:
-    - name: web
-      containerPort: 9090
-    volumeMounts:
-    - name: config-volume
-      mountPath: /etc/prometheus
-    - name: data
-      mountPath: /prometheus
-  restartPolicy: Always
-  securityContext: {}
-  terminationGracePeriodSeconds: 30
-  volumes:
-  - name: config-volume
-    configMap:
-      name: prometheus-config
-  - name: data
-    emptyDir: {}
+  selector: 
+    matchLabels: 
+      app: prometheus 
+  replicas: 1 
+  template: 
+    metadata: 
+      labels: 
+        app: prometheus 
+    spec: 
+      containers:
+      - command:
+        - "/bin/prometheus"
+        image: prom/prometheus:latest
+        name: prometheus
+        args:
+          - '--storage.tsdb.retention.time=6h'
+          - '--storage.tsdb.path=/prometheus'
+          - '--config.file=/etc/prometheus/prometheus.yaml'
+        ports:
+        - name: web
+          containerPort: 9090
+        volumeMounts:
+        - name: config-volume
+          mountPath: /etc/prometheus
+        - name: data
+          mountPath: /prometheus
+      volumes:
+        - name: config-volume
+          configMap:
+            name: prometheus-config
+            items: 
+              - key: prometheus
+                path: prometheus.yaml
+        - name: data
+          emptyDir: {}
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels: 
+      app: prometheus
+  name: prometheus 
+  namespace: otel-exporters
+spec:
+  selector:
+    app: prometheus
+  type: LoadBalancer
+  ports:
+  - protocol: TCP
+    port: 9090
