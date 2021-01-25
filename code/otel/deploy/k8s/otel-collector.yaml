@@ -32,39 +32,40 @@ data:
             - job_name: 'otel-collector'
               scrape_interval: 5s
               static_configs:
-                - targets: ['otel-collector.otel-collector:8888']
-            - job_name: 'linkerd'
-              kubernetes_sd_configs:
-              - role: pod
-                namespaces:
-                  names: ['python-app', 'otel-collector', 'otel-exporters']
-              scrape_interval: 5s
-              static_configs:
-                - targets: ['linkerd-prometheus.linkerd:9090'] #INFO: Pulls data from linkerD prometheus 
-              relabel_configs:
-                - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape, __meta_kubernetes_pod_container_name]
-                  regex: "true"
-                  action: keep
-              metric_relabel_configs:
-                - source_labels: [__name__]
-                  regex: "(request_duration_seconds.*|response_duration_seconds.*)"
-                  action: keep
-              honor_labels: true
-              metrics_path: '/federate'
-              params:
-                'match[]':
-                  - '{job="linkerd-proxy"}'
-                  - '{job="linkerd-controller"}'
+                - targets: ['0.0.0.0:8888']
+            # - job_name: 'linkerd'
+            #   kubernetes_sd_configs:
+            #   - role: pod
+            #     namespaces:
+            #       names: ['python-app', 'otel-collector', 'otel-exporters']
+            #   scrape_interval: 5s
+            #   static_configs:
+            #     - targets: ['linkerd-prometheus.linkerd:9090'] #INFO: Pulls data from linkerD prometheus 
+            #   relabel_configs:
+            #     - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape, __meta_kubernetes_pod_container_name]
+            #       regex: "true"
+            #       action: keep
+            #   metric_relabel_configs:
+            #     - source_labels: [__name__]
+            #       regex: "(request_duration_seconds.*|response_duration_seconds.*)"
+            #       action: keep
+            #   honor_labels: true
+            #   metrics_path: '/federate'
+            #   params:
+            #     'match[]':
+            #       - '{job="linkerd-proxy"}'
+            #       - '{job="linkerd-controller"}'
     exporters: 
       file: 
         path: ./exported.json
-      logging:
-        loglevel: debug
-      # prometheus:
-      #   endpoint: prometheus.otel-exporters:9090
-      #   const_labels:
-      #     app: python_app
-      #   send_timestamps: true
+      # logging:
+      #   loglevel: debug
+      prometheus:
+        endpoint: '0.0.0.0:8889'
+        namespace: otel-collector
+        const_labels:
+          app: python_app
+        send_timestamps: true
       jaeger:
         endpoint:  jaeger.otel-exporters:14250
         insecure: true
@@ -78,10 +79,10 @@ data:
       pipelines:
         traces:
           receivers: [otlp]
-          exporters: [file, jaeger, logging]
+          exporters: [file, jaeger]
         metrics:
-          receivers: [otlp]
-          exporters: [file, logging]
+          receivers: [otlp, prometheus]
+          exporters: [file, prometheus]
       
 ---
 apiVersion: v1
@@ -104,6 +105,8 @@ spec:
     port: 14268
   - name: metrics # Default endpoint for querying metrics.
     port: 8888
+  - name: prom # exports prom metrics 
+    port: 8889
   selector:
     component: otel-collector
 
@@ -151,6 +154,7 @@ spec:
         - containerPort: 14250 # Default endpoint for Jaeger HTTP receiver.
         - containerPort: 14268 # Default endpoint for Jaeger HTTP receiver.
         - containerPort: 8888  # Default endpoint for querying metrics.
+        - containerPort: 8889 # Prom exporter 
         - containerPort: 55679 # Default endpoint for ZPages extensions
         - containerPort: 1777 # pprof extension 
         - containerPort: 13133 # healthcheck extension 

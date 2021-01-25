@@ -45,8 +45,9 @@ Grpc endpoint: `jaeger.otel-exporters:14250`
 
 #### Prometheus 
 
-Endpoint: `prometheus.otel-exporters:9090`
+Endpoint: `0.0.0.0:8889`
 
+Where the prometheus backend will scrape from `otel-collector.otel-collector:8889`
 #### Azure Monitor
 
 Instrumentation key is needed

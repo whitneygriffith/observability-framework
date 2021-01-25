@@ -29,12 +29,14 @@ data:
     scrape_configs:
       # The job name is added as a label `job=<job_name>` to any timeseries scraped from this config.
       - job_name: 'prometheus'
-
         # metrics_path defaults to '/metrics'
         # scheme defaults to 'http'.
-
         static_configs:
         - targets: ['127.0.0.1:9090']
+      - job_name: 'otel-collector'
+        static_configs:
+        - targets: ['otel-collector.otel-collector:8888']
+        - targets: ['otel-collector.otel-collector:8889']
       # TODO: Enable Service Account and Cluster Role permissions to query K8s node and pods https://github.com/shevyf/prom_on_k8s_howto/blob/master/prometheus-roles.yml
       # - job_name: 'kubernetes-nodes'
       #   scheme: https
