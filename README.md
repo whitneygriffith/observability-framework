@@ -1,20 +1,57 @@
 # Introduction 
-TODO: Give a short introduction of your project. Let this section explain the objectives or the motivation behind this project. 
 
-# Getting Started
-TODO: Guide users through getting your code up and running on their own system. In this section you can talk about:
-1.	Installation process
-2.	Software dependencies
-3.	Latest releases
-4.	API references
+This captures our observability framework based on the [opentelemetry](https://opentelemetry.io/) standard that can be leveraged in future engagements.  
 
-# Build and Test
-TODO: Describe and show how to build your code and run the tests. 
+Additional Observability Philosophy is captured [here](./docs/OBSERVABILITY.md)
 
-# Contribute
-TODO: Explain how other users and developers can contribute to make your code better. 
 
-If you want to learn more about creating good readme files then refer the following [guidelines](https://docs.microsoft.com/en-us/azure/devops/repos/git/create-a-readme?view=azure-devops). You can also seek inspiration from the below readme files:
-- [ASP.NET Core](https://github.com/aspnet/Home)
-- [Visual Studio Code](https://github.com/Microsoft/vscode)
-- [Chakra Core](https://github.com/Microsoft/ChakraCore)
+## Telemetry Data 
+
+Telemetry data is catured from: 
+* Service to Service interactions 
+* External network requests to and from services 
+* Within a service (function calls, requests ...) 
+
+Telemetry data is of the following formats: 
+* Traces 
+* Logs 
+* Metrics 
+## Observability Layers 
+
+1. [Instrumentation of Application Layer](#Instrumentation-of-Application-Layer)  
+2. [Instrumentation of Platform Layer](#Instrumentation-of-Platform-Layer)
+3. [Collection of all telemetry](#Collection-of-all-telemetry) 
+4. [Exporting of all telemetry](#Exporting-of-all-telemetry) 
+5. [Display of telemetry data](#Display-of-telemetry-data) 
+6. [Response to telemetry data](#Response-to-telemetry-data) 
+
+### Instrumentation of Application Layer
+
+Code level instrumentation to generate telemetry data 
+
+[Python Instrumentation](./code/python_app)
+### Instrumentation of Platform Layer
+
+Service Mesh and other utilities that are able to monitor and pull data from infrastructure, network behavior and interactions between services. 
+
+Examples of the platform can be kubernetes cluster. 
+
+[LinkerD](./code/linkerd)
+
+### Collection of all telemetry
+
+Centralized collection of all telemetry data for a given solution.
+
+[opentelemetry collector](./otel_collector)
+### Exporting of all telemetry 
+
+Adaptable, flexible, extensible way to export varying types of telemetry data to different backends 
+
+[OSS Observability Backends](./otel_exporters)
+
+### Display of telemetry data 
+
+Ability to query and view data via graphs and dashboards. 
+### Response to telemetry data
+
+Alerts based on thresholds set 
