@@ -54,4 +54,14 @@ Adaptable, flexible, extensible way to export varying types of telemetry data to
 Ability to query and view data via graphs and dashboards. 
 ### Response to telemetry data
 
-Alerts based on thresholds set 
+**Alerts**
+
+Signify that a human needs to take action immediately in response to something that is either happening or about to happen, in order to improve the situation.
+
+**Tickets**
+
+Signify that a human needs to take action, but not immediately. The system cannot automatically handle the situation, but if a human takes action in a few days, no damage will result.
+
+**Logging**
+
+No one needs to look at this information, but it is recorded for diagnostic or forensic purposes. The expectation is that no one reads logs unless something else prompts them to do so.
