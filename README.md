@@ -65,3 +65,7 @@ Signify that a human needs to take action, but not immediately. The system canno
 **Logging**
 
 No one needs to look at this information, but it is recorded for diagnostic or forensic purposes. The expectation is that no one reads logs unless something else prompts them to do so.
+
+# What's Next for this framework?
+
+* [Display of telemetry data for traces and metrics](#Display-of-telemetry-data ) 
