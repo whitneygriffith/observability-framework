@@ -1,0 +1,268 @@
+apiVersion: v1 
+kind: Namespace
+metadata: 
+  name: observability 
+
+---
+#Headless service for elastic search
+kind: Service
+apiVersion: v1
+metadata:
+  name: elasticsearch
+  namespace: observability
+  labels:
+    app: elasticsearch
+spec:
+  selector:
+    app: elasticsearch
+  clusterIP: None
+  ports:
+    - port: 9200
+      name: rest
+    - port: 9300
+      name: inter-node
+
+---
+#StatefulSet for elastic search
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: elasticsearch-cluster
+  namespace: observability
+spec:
+  serviceName: elasticsearch
+  replicas: 3
+  selector:
+    matchLabels:
+      app: elasticsearch
+  template:
+    metadata:
+      labels:
+        app: elasticsearch
+    spec:
+      containers:
+      - name: elasticsearch
+        image: docker.elastic.co/elasticsearch/elasticsearch:7.2.0 #TODO: Update tag 
+        resources:
+            limits:
+              cpu: 1000m
+            requests:
+              cpu: 100m
+        ports:
+        - containerPort: 9200
+          name: rest
+          protocol: TCP
+        - containerPort: 9300
+          name: inter-node
+          protocol: TCP
+        volumeMounts:
+        - name: data
+          mountPath: /usr/share/elasticsearch/data
+        env:
+          - name: cluster.name
+            value: logs
+          - name: node.name
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.name
+          - name: discovery.seed_hosts #host names of master eligible nodes 
+            value: "elasticsearch-cluster-0.elasticsearch,elasticsearch-cluster-1.elasticsearch,elasticsearch-cluster-2.elasticsearch"
+          - name: cluster.initial_master_nodes #names of master eligible nodes 
+            value: "elasticsearch-cluster-0,elasticsearch-cluster-1,elasticsearch-cluster-2"
+          - name: ES_JAVA_OPTS #Sets the min and max heap size https://www.elastic.co/guide/en/elasticsearch/reference/current/important-settings.html#heap-size-settings
+            value: "-Xms512m -Xmx512m"
+      initContainers:
+      - name: fix-permissions
+        image: busybox
+        command: ["sh", "-c", "chown -R 1000:1000 /usr/share/elasticsearch/data"] #changes the owner and group of the Elasticsearch data directory to 1000:1000, the Elasticsearch user’s UID https://www.elastic.co/guide/en/elasticsearch/reference/current/docker.html#_notes_for_production_use_and_defaults
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - name: data
+          mountPath: /usr/share/elasticsearch/data
+      - name: increase-vm-max-map
+        image: busybox
+        command: ["sysctl", "-w", "vm.max_map_count=262144"] #increases the operating system’s limits on mmap counts, which by default may be too low, resulting in out of memory errors
+        securityContext:
+          privileged: true
+      - name: increase-fd-ulimit
+        image: busybox
+        command: ["sh", "-c", "ulimit -n 65536"] #increases the maximum number of open file descriptors
+        securityContext:
+          privileged: true
+  volumeClaimTemplates:
+  - metadata:
+      name: data
+      labels:
+        app: elasticsearch
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      storageClassName: default #TODO: select the best default azure storage class to store logs or create one and verify it matches do-block-storage storage class specs
+      resources:
+        requests:
+          storage: 100Gi
+
+# Validate: 
+# kubectl rollout status sts/elasticsearch-cluster -n observability
+# kubectl port-forward elasticsearch-cluster-0 9200:9200 -n observability
+# curl http://localhost:9200/_cluster/state?pretty > test.txt  
+# in test.txt search for elasticsearch-cluster should see 3 nodes 
+
+---
+# Service for Kibana
+apiVersion: v1
+kind: Service
+metadata:
+  name: kibana
+  namespace: observability
+  labels:
+    app: kibana
+spec:
+  ports:
+  - port: 5601
+  selector:
+    app: kibana
+
+---
+# Deployment for kibana
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kibana
+  namespace: observability
+  labels:
+    app: kibana
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kibana
+  template:
+    metadata:
+      labels:
+        app: kibana
+    spec:
+      containers:
+      - name: kibana
+        image: docker.elastic.co/kibana/kibana:7.2.0 #TODO: update tag
+        resources:
+          limits:
+            cpu: 1000m
+          requests:
+            cpu: 100m
+        env:
+          - name: ELASTICSEARCH_URL
+            value: http://elasticsearch:9200
+        ports:
+        - containerPort: 5601
+
+# Validate: 
+# kubectl rollout status deployment/kibana -n observability
+# Grab the kibana pod name from kubectl get pods -n observability
+# kubectl port-forward kibana-5749b5778b-82jc8 5601:5601 -n observability
+# Visit http://localhost:5601 
+
+---
+# Service Account for Flentd 
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: fluentd
+  namespace: observability
+  labels:
+    app: fluentd
+
+---
+# ClusterRole for Flentd
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: fluentd
+  labels:
+    app: fluentd
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - pods
+  - namespaces
+  verbs:
+  - get
+  - list
+  - watch
+
+---
+# ClusterRoleBinding for Flentd
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: fluentd
+roleRef:
+  kind: ClusterRole
+  name: fluentd
+  apiGroup: rbac.authorization.k8s.io
+subjects:
+- kind: ServiceAccount
+  name: fluentd
+  namespace: observability
+
+---
+# DaemonSet for Flentd
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: fluentd
+  namespace: observability
+  labels:
+    app: fluentd
+spec:
+  selector:
+    matchLabels:
+      app: fluentd
+  template:
+    metadata:
+      labels:
+        app: fluentd
+    spec:
+      serviceAccount: fluentd
+      serviceAccountName: fluentd
+      tolerations:
+      - key: node-role.kubernetes.io/master
+        effect: NoSchedule # Endures the DaemonSet gets rolled out to the K8s masters https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+      containers:
+      - name: fluentd
+        image: fluent/fluentd-kubernetes-daemonset:v1.4.2-debian-elasticsearch-1.1 #TODO: update tag 
+        env:
+          - name:  FLUENT_ELASTICSEARCH_HOST
+            value: "elasticsearch.observability.svc.cluster.local"
+          - name:  FLUENT_ELASTICSEARCH_PORT
+            value: "9200"
+          - name: FLUENT_ELASTICSEARCH_SCHEME
+            value: "http"
+          - name: FLUENTD_SYSTEMD_CONF
+            value: disable
+        resources:
+          limits:
+            memory: 512Mi
+          requests:
+            cpu: 100m
+            memory: 200Mi
+        volumeMounts:
+        - name: varlog
+          mountPath: /var/log
+        - name: varlibdockercontainers
+          mountPath: /var/lib/docker/containers
+          readOnly: true
+      terminationGracePeriodSeconds: 30
+      volumes:
+      - name: varlog
+        hostPath:
+          path: /var/log
+      - name: varlibdockercontainers
+        hostPath:
+          path: /var/lib/docker/containers
+
+# Validate:
+# kubectl get ds -n observability
+# kubectl port-forward kibana-5749b5778b-82jc8 5601:5601 -n observability
+# Visit http://localhost:5601 and click discover, create index pattern for logstash-*

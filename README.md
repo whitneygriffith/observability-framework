@@ -38,11 +38,14 @@ Examples of the platform can be kubernetes cluster.
 
 [LinkerD](./code/linkerd)
 
+[Unified Logging Layer](./code/logging)
+
 ### Collection of all telemetry
 
 Centralized collection of all telemetry data for a given solution.
 
 [opentelemetry collector](./otel_collector)
+
 ### Exporting of all telemetry 
 
 Adaptable, flexible, extensible way to export varying types of telemetry data to different backends 

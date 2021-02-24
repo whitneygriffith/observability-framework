@@ -41,6 +41,11 @@ incoming_requests_counter = meter.create_counter(
     value_type=int,
 )
 
+# logging configuration
+
+LOGLEVEL = environ.get("LOGLEVEL", "INFO").upper()
+logging.basicConfig(level=LOGLEVEL)
+
 app = Flask(__name__)
 
 url = environ.get("API_URL", "http://0.0.0.0:8000")

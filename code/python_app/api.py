@@ -42,6 +42,11 @@ incoming_requests_counter = meter.create_counter(
     value_type=int,
 )
 
+# logging configuration
+
+LOGLEVEL = environ.get("LOGLEVEL", "INFO").upper()
+logging.basicConfig(level=LOGLEVEL)
+
 app = Flask(__name__)
 
 # FlaskInstrumentor().instrument_app(app) TODO: responding with a Failed to detach context 
