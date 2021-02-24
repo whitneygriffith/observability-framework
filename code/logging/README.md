@@ -16,9 +16,13 @@ Get the kibana pod name using `kubectl get pods -n observability`
 
 `kubectl port-forward kibana-* 5601:5601 -n observability`
 
-Visit http://localhost:5601 and click [discover](https://www.elastic.co/guide/en/kibana/current/discover.html) and create [index pattern](https://www.elastic.co/guide/en/kibana/current/index-patterns.html) for logstash-* 
+Visit http://localhost:5601 and click [discover](https://www.elastic.co/guide/en/kibana/current/discover.html) 
 
 View Logs 
+
+## Dashboard 
+
+Create [index pattern](https://www.elastic.co/guide/en/kibana/current/index-patterns.html) for `logstash-*` as a catch-all and any additional custom patterns
 
 ## Additional Reading 
 
